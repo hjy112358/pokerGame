@@ -1,11 +1,13 @@
 <template>
 	<view class="content">
 		<input type="text" v-model='selfuserid'  style="color:#fff;border:1px solid #f00" />
+		<!-- <button type="primary" @tap='addFriend(1)'>加好友</button> -->
 	<!-- 	<view class="testsend">
 			<input type="text" v-model='selfuserid'  style="color:#fff;border:1px solid #f00" />
 			<input type="text" v-model='selfToken'  style="color:#fff;border:1px solid #f00" />
 		</view>
  -->
+	
 		<view class="topbox">
 			<!-- 返回 -->
 			<view class="back" @tap='back()'>
@@ -60,7 +62,7 @@
 				<text v-else class="notext">{{leftbtnmsg.leftText}}</text>
 			</view>
 			<!-- 出牌展示区 -->
-			<view class="cardlist clearfix cardnormal cardshowlist flex juscon-center">
+			<view class="cardlist clearfix cardnormal cardshowlist">
 				<view class="card big cardwrap big-card" v-for='(item,index) in leftbtnmsg.leftChoose' :key="index" :style="cardleft(item,index)">
 					<image :src="item.src" mode=""></image>
 				</view>
@@ -75,12 +77,8 @@
 						</view>
 					</view>
 				</view>
-
 			</view>
-
-
 		</view>
-
 
 		<!-- 我 -->
 		<view class="palyS palybox " v-show='playmsgshow'>
@@ -233,7 +231,7 @@
 				<text v-else class="notext">{{rightbtnmsg.rightText}}</text>
 			</view>
 			<!-- 出牌展示区 -->
-			<view class="cardlist clearfix cardnormal cardshowlist flex juscon-center">
+			<view class="cardlist clearfix cardnormal cardshowlist ">
 				<view class="card big cardwrap big-card" v-for='(item,index) in rightbtnmsg.rightChoose' :key="index" :style="cardleft(item,index)">
 					<image :src="item.src" mode=""></image>
 				</view>
@@ -280,7 +278,7 @@
 				<image src="../../static/image/back.png" ></image>
 			</view>
 			<view class="roomBtn flex juscon-around alignitem-center">
-				<image src="../../static/image/change.png" class="changeDesk"></image>
+				<image src="../../static/image/change.png" class="changeDesk" @tap='changeDesk()'></image>
 				<image src="../../static/image/award.png" class="award"></image>
 			</view>
 			<view class="settleBox">
@@ -316,7 +314,7 @@
 									<img src="../../static/image/land.png" alt="" class="island" v-show='type1data.landid==playself.userid' />
 								</view>
 								<p class="ellipsis">{{playself.nickname}}</p>
-								<view class="addfriend"></view>
+								<view class="addfriend" ></view>
 							</li>
 							<li class="endpoints">{{endPoint}}</li>
 							<li class="multiple" v-if='type1data.landid==playself.userid'>{{landdoublePoint}}</li>
@@ -330,7 +328,8 @@
 									<img src="../../static/image/land.png" alt="" class="island" v-show='type1data.landid==playleft.userid' />
 								</view>
 								<p class="ellipsis">{{playleft.nickname}}</p>
-								<view class="flex juscon-center alignitem-center">
+								<view class="addfriend" v-if='leftbtnmsg.isFriend'></view>
+								<view class="flex juscon-center alignitem-center" @tap='addFriend(playleft.userid)' v-else>
 									<img src="../../static/image/addfriend.png" alt="" class="addfriend" />
 								</view>
 
@@ -347,7 +346,8 @@
 									<img src="../../static/image/land.png" alt="" class="island" v-show='type1data.landid==playright.userid' />
 								</view>
 								<p class="ellipsis">{{playright.nickname}}</p>
-								<view class="flex juscon-center alignitem-center">
+								<view class="addfriend" v-if='rightbtnmsg.isFriend'></view>
+								<view class="flex juscon-center alignitem-center" @tap='addFriend(playright.userid)' v-else>
 									<img src="../../static/image/addfriend.png" alt="" class="addfriend" />
 								</view>
 
@@ -392,7 +392,7 @@
 				mp3: '/static/f.mp3',
 				cardslist: null, //获取所有牌信息
 
-				//左边玩家相关
+				//左边玩家相关  
 				leftbtnmsg: {
 					leftTime: 30, //倒计时 
 					leftText: '', //操作文字展示
@@ -401,6 +401,7 @@
 					timebtn: false, //是否显示倒计
 					timeleft: null, //定时器名字
 					landhead: false, //地主头像
+					isFriend:false,//是否是好友
 				},
 				leftcount: 0, //左玩家牌数
 				playleft: {}, //左边玩家信息详情
@@ -423,6 +424,7 @@
 					sendbtn: false, //出牌 
 					isChoosebtn: false, //是否操作
 					landhead: false, //地主头像
+					
 				},
 				playself: {}, //我的信息详情
 
@@ -435,6 +437,7 @@
 					isRightTest: false, //确定true  否定false
 					timeright: null,
 					landhead: false, //地主头像
+					isFriend:false,   
 				},
 				rightcount: 0, //右玩家牌数
 				playright: {}, //右边玩家信息详情
@@ -493,11 +496,20 @@
 				startbtn:true,//是否显示开始按钮
 				waiting:false ,//等待匹配文字显示
 				roomID:'',//房间ID
-				
+				chageTable:false, //是否换桌
+				isLeave:true,//是否可以离开房间
 				
 				// 测试token
-				tokenlist:['','9383c08eed1644b58055c68e9341e172','9383c08eed1644b58055c68e9341e177','304b957948a34c4594b41f0beda38d62']
+				tokenlist:['',
+				'9383c08eed1644b58055c68e9341e172',
+				'9383c08eed1644b58055c68e9341e177',
+				'304b957948a34c4594b41f0beda38d62',
+				'304b957948a34c4594b41f0beda38d86',
+				'9383c08eed1644b58055c68e9341e174']
 			}
+		},
+		destroyed() {
+			// window.addEventListener('beforeunload', e => this.back(e))
 		},
 		components: {
 			uniList,
@@ -505,6 +517,7 @@
 		},
 		created() {
 			this.remFn(); //加载rem
+			// window.addEventListener('beforeunload', e => this.back(e))
 		},
 		mounted() {
 			window.getUserInfo= this.getUserInfo;
@@ -517,7 +530,10 @@
 			},
 			isSureland() {
 				// 确认地主
-				this.sureLand()
+				if(this.isSureland){
+					this.sureLand()
+				}
+				
 			},
 			isboth(){
 				if(this.isboth==2){
@@ -528,38 +544,51 @@
 		},
 
 		methods: {
+			// 加好友
+			addFriend(id){
+				// alert('好友id----'+id)
+				H5Interactive.add_friend(id)
+			},
+			
 			// 返回
 			back(){
-				// this.websocket.close()
-				var data={
-					userid:this.selfuserid,
-					token:this.tokenlist[this.selfuserid],
-					gametype:1
+				if(this.isLeave && this.websocket){
+					this.websocket.close()
+				}else if(!this.websocket){
+					H5Interactive.exit_room()   //退出房间
+				}else{
+					alert('不可以')
 				}
-				// 退出房间
-				uni.request({
-				    url: this.$requestUrl.requestUrl.exitRoom,
-					method:'POST',
-				    data:data,
-					header: {
-						'Content-Type' : 'application/x-www-form-urlencoded'
-					},
-				    success: (res) => {
-				        console.log(res.data);
-						if(res.data.success){
-							// H5Test.onBack()   //安卓的退出房间
-						}
-				    }
-				});
+				
+				
 			},
 			// 继续游戏
 			continueGame(){
-				// this.accountRes=false;//输赢界面显示  
-				// this.isfinish=false;//是否结束
-				// this.waiting=true;
+				var message = {
+					userId: this.selfuserid,
+					funcType: 100,
+					msg: "1"
+				}
+				this.websocket.send(JSON.stringify(message));
+				this.clearall();
+				var websocket=this.websocket;
+				var userId=this.selfuserid;
+				var userToken=this.selfToken;
 				Object.assign(this.$data, this.$options.data())
-				console.log(this.$data)
+				this.selfuserid=userId;
+				this.selfToken=userToken;
+				this.websocket=websocket;
+				this.waiting=true;
+				this.startbtn=false;
 			},
+			//换桌
+			changeDesk(){
+				this.isLeave=true;
+				this.back();
+				this.chageTable=true;
+			},
+			
+			
 			// 获取用户的id和token
 			getUserInfo(str){
 				this.selfuserid=str.split(",")[0].split('=')[1];
@@ -573,6 +602,10 @@
 					token:_this.selfToken,
 					gametype:1
 				}
+				if(_this.chageTable){
+					_this.chageTable=false;
+					usermsg.originalRoomId=_this.roomID;
+				}
 				uni.request({
 				    url: _this.$requestUrl.requestUrl.startGame,
 					method:'POST',
@@ -581,9 +614,7 @@
 						'Content-Type' : 'application/x-www-form-urlencoded'
 					},
 				    success: (res) => {
-				        console.log(res.data);
 						if(res.data.success){
-							// console.log(res.data.data.id)
 							_this.roomID=res.data.data.id;
 							this.start();
 						}
@@ -599,11 +630,9 @@
 				_this.websocket = new WebSocket(_this.$requestUrl.requestUrl.websocketUrl + _this.roomID+'/'+selfuserID);
 				_this.websocket.onopen = function(event) {
 					console.log('连接成功');
-					// console.log(event)
+					_this.isLeave=true;
 				};
 				_this.websocket.onmessage = function(event) {
-					// console.log(event)
-					
 					var data = JSON.parse(event.data);
 					console.log(data)
 					//functype  1斗地主    2 加倍    3出牌
@@ -611,7 +640,6 @@
 						// 抢地主操作文字显示
 						if (_this.type1data.isSureRepeat && !_this.isSureland) {
 							_this.Grablandlord(data.funcType, data.userId, data.msg);
-
 							if (data.msg == 0) {
 								_this.isSureland = true;
 								_this.type1data.landid = data.userId;
@@ -636,7 +664,6 @@
 								_this.type1data.type1.push(data.userId);
 								if (_this.type1data.type1.length < 3) {
 									//不满3人时，下一家触发抢地主倒计时
-
 									var index = _this.type1data.type1.length;
 									var first = _this.whichplay(_this.useridlist[index]);
 									_this.coutdown(first, 1); //开启抢地主倒计时
@@ -712,20 +739,7 @@
 							}
 						}
 						
-						_this.playOrderCount++;
-						var nextindex = _this.playOrderCount % 3;
-						var indexId = _this.playOrder[nextindex];
-						var which = _this.whichplay(indexId);
-						if(!_this.isfinish){
-							if (which == 'left') {
-								_this.leftTimeDown();
-							} else if (which == 'self') {
-								_this.selfTimeDown(3);
-							
-							} else {
-								_this.rightTimeDown()
-							}
-						}
+						
 						
 					}
 					
@@ -734,6 +748,7 @@
 						_this.cardslist = JSON.parse(data.card);
 						_this.beginTime= _this.formatDate();
 						_this.isboth++;
+						_this.isLeave=false;
 					}
 					// 获取用户信息
 					if (data.userInfo) {
@@ -764,16 +779,15 @@
 							_this.playleft = _this.usermsg[0];
 							_this.playright = _this.usermsg[1];
 						}
+						_this.setFriend(selfuserID,_this.useridlist)
+						
 					}
 				};
 				//连接关闭的回调方法
 				_this.websocket.onclose = function(event) {
+					console.log(event)
 					if(event.data){
 						var data = JSON.parse(event.data);
-						console.log(data)
-						if (data.funcType == 4) {
-							
-						}
 					}else{
 						var data={
 							userid:_this.selfuserid,
@@ -789,9 +803,22 @@
 								'Content-Type' : 'application/x-www-form-urlencoded'
 							},
 						    success: (res) => {
-						        console.log(res.data);
 								if(res.data.success){
-									// H5Test.onBack()   //安卓的退出房间
+									if(_this.chageTable){
+										var userId=_this.selfuserid;
+										var userToken=_this.selfToken;
+										var lastroomid=_this.roomID;
+										Object.assign(_this.$data, _this.$options.data())
+										_this.selfuserid=userId;
+										_this.selfToken=userToken;
+										_this.chageTable=true;
+										_this.roomID=lastroomid;
+										_this.startGame();
+									}else{
+										H5Interactive.exit_room()   //退出房间
+									}
+									
+									
 								}
 						    }
 						});
@@ -801,6 +828,36 @@
 				_this.websocket.onerror = function(data) {
 					console.log(data)
 				};
+			},
+			// 处理好友关系是否显示加好友图标
+			setFriend(selfid,idlist){
+				var _this=this;
+				var data={
+					userid:parseInt(selfid),
+					userids:idlist
+				}
+				uni.request({
+				    url: _this.$requestUrl.requestUrl.isFriend,
+					method:'POST',
+				    data:data,
+				    success: (res) => {
+						console.log(res)
+						if(res.data.success){
+							var ids=res.data.data;
+							console.log(ids)
+							if(ids.length>0){
+								for(var i=0;i<ids.length;i++){
+									var which=_this.whichplay(ids[i]);
+									if(which=='left'){
+										_this.leftbtnmsg.isFriend=true;
+									}else if(which=='right'){
+										_this.rightbtnmsg.isFriend=true;   
+									}
+								}
+							}
+						}
+				    }
+				});
 			},
 			// 判断当前是否上两家都不出
 			isReturn(id) {
@@ -845,6 +902,7 @@
 						this.leftcount = this.leftcount - parseInt(JSON.parse(msg).length);
 						if(this.leftcount==0){
 							this.finish(id);
+							this.clearall();
 							this.isfinish=true;
 						}
 					}
@@ -867,13 +925,30 @@
 						this.rightcount = this.rightcount - (JSON.parse(msg).length);
 						if(this.rightcount==0){
 							this.finish(id);
+							this.clearall();
 							this.isfinish=true;
 						}
 					}
 				}else{
 					if(this.palySpaper.length==0){
 						this.finish(id);
+						this.clearall();
 						this.isfinish=true;
+					}
+				}
+				
+				this.playOrderCount++;
+				var nextindex = this.playOrderCount % 3;
+				var indexId = this.playOrder[nextindex];
+				var which = this.whichplay(indexId);
+				if(!this.isfinish){
+					if (which == 'left') {
+						this.leftTimeDown();
+					} else if (which == 'self') {
+						this.selfTimeDown(3);
+					
+					} else {
+						this.rightTimeDown()
 					}
 				}
 			},
@@ -967,7 +1042,7 @@
 				let timer = setInterval(() => {
 				
 					// 牌发完，定时器关闭
-					if (nowCardLength >= 50) {
+					if (nowCardLength >= 50) {//50
 						clearInterval(timer);
 						this.showpaper = false;
 						var first = this.whichplay(this.useridlist[0]);
@@ -1705,8 +1780,7 @@
 				var userID = this.selfuserid;
 				var lastcard = this.getlastCard(userID);
 				var which = this.hintCards(lastcard, this.palySpaper);
-				// console.log('提示')
-				// console.log(which)
+				
 				this.palySpaper.forEach(item => {
 					item.checked = false;
 				})
@@ -1747,6 +1821,7 @@
 			finish(id) {
 				// id 谁的牌结束了
 				var _this=this;
+				_this.isLeave=true;
 				_this.isfinish=true;
 				_this.clearall();
 				_this.accountRes = true;
@@ -1824,13 +1899,8 @@
 							_this.isWin = false;
 						}
 					}
-				}
-				
-				
-				
+				}	
 			}
-			
-
 		}
 	}
 </script>
@@ -2191,7 +2261,7 @@
 	}
 
 	.palyS .cardshowlist {
-		margin-bottom:-.28rem;
+		margin-bottom:-.58rem;
 	}
 
 	@media screen and (max-width: 736px) {
@@ -2306,6 +2376,9 @@
 
 	.cardnormal .card {
 		float: left;
+	}
+	.selfbtn{
+		margin-bottom:-0.2rem
 	}
 
 	.paperbox {
@@ -2438,13 +2511,13 @@
 	}
 
 	.palyLbox.mybox {
-		top: .85rem;
+		top: .75rem;
 		left: 2.3rem;
 		transform: translate(0, 0);
 	}
 
 	.palyRbox.mybox {
-		top: .85rem;
+		top: .75rem;
 		right: 2.4rem;
 		transform: translate(0, 0);
 	}
