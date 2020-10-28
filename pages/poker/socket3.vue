@@ -1,17 +1,13 @@
 <template>
 	<view class="content">
-		<input type="text" v-model='selfuserid'  style="color:#fff;border:1px solid #f00" />
-		<!-- <button type="primary" @tap='addFriend(1)'>加好友</button> -->
-	<!-- 	<view class="testsend">
-			<input type="text" v-model='selfuserid'  style="color:#fff;border:1px solid #f00" />
-			<input type="text" v-model='selfToken'  style="color:#fff;border:1px solid #f00" />
+		<view class="testsend">
+			<input type="text" v-model='selfuserid' style="color:#fff;border:1px solid #f00" />
+			<input type="text" v-model='selfToken' style="color:#fff;border:1px solid #f00" />
 		</view>
- -->
-	
 		<view class="topbox">
 			<!-- 返回 -->
 			<view class="back" @tap='back()'>
-				<image src="../../static/image/back.png" ></image>
+				<image src="../../static/image/back.png"></image>
 			</view>
 
 			<!-- 底牌 -->
@@ -31,8 +27,8 @@
 			<view class="landhead" v-show='leftbtnmsg.landhead'>
 				<image src="../../static/image/landlord.png" mode=""></image>
 			</view>
-			<view class="headimg">
-				<image src="../../static/image/head.png" mode=""></image>
+			<view class="headimg flex juscon-center alignitem-center">
+				<image :src="playleft.avatar" mode=""></image>
 			</view>
 			<view class="playbg flex alignitem-end">
 				<view class="flex juscon-between alignitem-start">
@@ -63,7 +59,7 @@
 			</view>
 			<!-- 出牌展示区 -->
 			<view class="cardlist clearfix cardnormal cardshowlist">
-				<view class="card big cardwrap big-card" v-for='(item,index) in leftbtnmsg.leftChoose' :key="index" :style="cardleft(item,index)">
+				<view class="card big cardwrap big-card" v-for='(item,index) in leftbtnmsg.leftChoose' :key="index" :style="cardleft(item,index,'left')">
 					<image :src="item.src" mode=""></image>
 				</view>
 			</view>
@@ -147,11 +143,12 @@
 					<view class="landhead" v-show='selfbtnmsg.landhead'>
 						<image src="../../static/image/landlord.png" mode=""></image>
 					</view>
-					<view class="headimg">
-						<image src="../../static/image/head.png" mode=""></image>
-					</view>
+
 					<view class="playbg flex alignitem-end">
-						<view class="">
+						<view class="flex  juscon-start">
+							<view class="headimg headimg flex juscon-center alignitem-center">
+								<image :src="playself.avatar" mode=""></image>
+							</view>
 							<view class="playmsg">
 								<view class="flex juscon-between alignitem-center playlever">
 									<view class="playlevel flex juscon-center alignitem-center">
@@ -173,9 +170,10 @@
 			<!-- 牌列表展示 -->
 			<view class="cardlist  cardnormal mycarlist flex juscon-center">
 				<view class="clearfix mycardbox">
-					<view class="card big cardwrap big-card" v-for='(item,index) in palySpaper' :key="index" :style="mycardleft(item,index)"
-					 @tap='checkCard(item,index)'>
-						<image :src="item.src" mode=""></image>
+					<view class="card big cardwrap big-card" v-for='(item,index) in palySpaper' :key="index" :style="mycardleft(item,index)">
+						<img :src="item.src" :cid="item.cardId" @tap='checkCard(item,index)' @touchstart="bodyTouchStart" @touchmove="bodyTouchMove"
+						 @touchend="bodyTouchEnd">
+						</img>
 					</view>
 				</view>
 
@@ -199,8 +197,8 @@
 			<view class="landhead" v-show='rightbtnmsg.landhead'>
 				<image src="../../static/image/landlord.png" mode=""></image>
 			</view>
-			<view class="headimg">
-				<image src="../../static/image/head.png" mode=""></image>
+			<view class="headimg  flex juscon-center alignitem-center">
+				<image :src="playright.avatar" mode=""></image>
 			</view>
 			<view class="playbg flex alignitem-end">
 				<view class="flex juscon-between alignitem-start">
@@ -231,8 +229,8 @@
 				<text v-else class="notext">{{rightbtnmsg.rightText}}</text>
 			</view>
 			<!-- 出牌展示区 -->
-			<view class="cardlist clearfix cardnormal cardshowlist ">
-				<view class="card big cardwrap big-card" v-for='(item,index) in rightbtnmsg.rightChoose' :key="index" :style="cardleft(item,index)">
+			<view class="cardlist clearfix cardnormal cardshowlist flex juscon-end">
+				<view class="card big cardwrap big-card" v-for='(item,index) in rightbtnmsg.rightChoose' :key="index" :style="cardleft(item,index,'right')">
 					<image :src="item.src" mode=""></image>
 				</view>
 			</view>
@@ -260,14 +258,14 @@
 					</transition>
 				</view>
 			</view>
-			
+
 		</view>
 		<view class="startbtn" @tap="startGame()" v-show='startbtn'>
 			<image src="../../static/image/start.png" mode=""></image>
 		</view>
-		
+
 		<view class="waiting" v-show='waiting'>
-			<text>正在等待伙伴加入...</text>
+			<text>正在等待伙伴加入...({{waitTime}}s)</text>
 		</view>
 		<!-- 输赢界面 -->
 		<view class="accountbox" v-if="accountRes" :class="isWin ? `win` : `lose`">
@@ -275,7 +273,7 @@
 			<div class="account-bg">
 			</div>
 			<view class="back" @tap='back()'>
-				<image src="../../static/image/back.png" ></image>
+				<image src="../../static/image/back.png"></image>
 			</view>
 			<view class="roomBtn flex juscon-around alignitem-center">
 				<image src="../../static/image/change.png" class="changeDesk" @tap='changeDesk()'></image>
@@ -314,7 +312,7 @@
 									<img src="../../static/image/land.png" alt="" class="island" v-show='type1data.landid==playself.userid' />
 								</view>
 								<p class="ellipsis">{{playself.nickname}}</p>
-								<view class="addfriend" ></view>
+								<view class="addfriend"></view>
 							</li>
 							<li class="endpoints">{{endPoint}}</li>
 							<li class="multiple" v-if='type1data.landid==playself.userid'>{{landdoublePoint}}</li>
@@ -363,9 +361,14 @@
 			</view>
 
 			<!-- 继续游戏按钮 -->
-			<div class="continue-btn" @tap='continueGame()'>
-				<img src="../../static/image/continuebtn.png" alt="" />
+			<div class="continue-btn" @tap="continueGame">
+				<p>继续游戏 ({{waitTimeContine}}s)</p>
+				<!-- < img src="../../static/image/continuebtn.png" alt="" /> -->
 			</div>
+			<!-- 	<div class="continue-btn flex juscon-start alignitem-center" @tap='continueGame()'>
+				<img src="../../static/image/continuebtn.png" alt="" />
+				<text>({{waitTimeContine}}s)</text>
+			</div> -->
 		</view>
 	</view>
 </template>
@@ -375,6 +378,9 @@
 	import uniList from '../../components/uni-list/uni-list.vue'
 	import uniListItem from '../../components/uni-list-item/uni-list-item.vue'
 	import io from '@/node_modules/weapp.socket.io/lib/weapp.socket.io.js'
+	import {
+		requestUrl
+	} from "../../util/common.js";
 	export default {
 		data() {
 			return {
@@ -401,7 +407,7 @@
 					timebtn: false, //是否显示倒计
 					timeleft: null, //定时器名字
 					landhead: false, //地主头像
-					isFriend:false,//是否是好友
+					isFriend: false, //是否是好友
 				},
 				leftcount: 0, //左玩家牌数
 				playleft: {}, //左边玩家信息详情
@@ -424,7 +430,7 @@
 					sendbtn: false, //出牌 
 					isChoosebtn: false, //是否操作
 					landhead: false, //地主头像
-					
+
 				},
 				playself: {}, //我的信息详情
 
@@ -437,7 +443,7 @@
 					isRightTest: false, //确定true  否定false
 					timeright: null,
 					landhead: false, //地主头像
-					isFriend:false,   
+					isFriend: false,
 				},
 				rightcount: 0, //右玩家牌数
 				playright: {}, //右边玩家信息详情
@@ -449,7 +455,7 @@
 
 				// 基础参数
 				doublePoint: 15, //倍数
-				landdoublePoint:15,//地主倍数
+				landdoublePoint: 15, //地主倍数
 				endPoint: 30, //底分
 				websocket: null,
 				totalTime: 20,
@@ -457,7 +463,7 @@
 
 				//用户相关
 				selfuserid: '', //当前用户userid
-				selfToken:'', //当前用户token
+				selfToken: '', //当前用户token
 				whichme: '', //self位置的index
 				playmsgshow: false, //是否显示玩家
 				userRecord: [], //记录进入用户的id
@@ -477,7 +483,7 @@
 				firstland: null, //记录重复一遍抢地主的第一个人id
 				secondsure: false, //记录重复抢地主是否完成
 				playOrder: [], //确认地主后的出牌顺序
-			
+
 				// 加倍
 				type2: [], //判断加倍是否完成（通过操作人数）
 
@@ -487,25 +493,32 @@
 				lastcard: [], ///记录上一家的牌
 
 				accountRes: false, //输赢界面显示  
-				isWin: false,
-				rightmoney:0, //右玩家最后分数
-				leftmoney:0,//左玩家最后分数
-				selfmoney:0,//本玩家最后分数
-				isfinish:false, //是否结束
-				isboth:0, //记录牌和用户信息是否都拿到
-				startbtn:true,//是否显示开始按钮
-				waiting:false ,//等待匹配文字显示
-				roomID:'',//房间ID
-				chageTable:false, //是否换桌
-				isLeave:true,//是否可以离开房间
-				
+				isWin: true, //-----false
+				rightmoney: 0, //右玩家最后分数
+				leftmoney: 0, //左玩家最后分数
+				selfmoney: 0, //本玩家最后分数
+				isfinish: false, //是否结束
+				isboth: 0, //记录牌和用户信息是否都拿到
+				startbtn: true, //是否显示开始按钮
+				waiting: false, //等待匹配文字显示
+				roomID: '', //房间ID
+				chageTable: false, //是否换桌
+				isLeave: true, //是否可以离开房间
+				touchcard: [], //滑动选中的牌
+				waitTime: 30, //开始游戏默认等待时间
+				waitTimeInterval: null, //开始游戏倒计时
+				waitTimeContine: 30, //继续游戏默认等待时间
+				waitContinueInterval: null, //继续游戏倒计时
+
 				// 测试token
-				tokenlist:['',
-				'9383c08eed1644b58055c68e9341e172',
-				'9383c08eed1644b58055c68e9341e177',
-				'304b957948a34c4594b41f0beda38d62',
-				'304b957948a34c4594b41f0beda38d86',
-				'9383c08eed1644b58055c68e9341e174']
+				tokenlist: ['',
+					'9383c08eed1644b58055c68e9341e172',
+					'9383c08eed1644b58055c68e9341e177',
+					'304b957948a34c4594b41f0beda38d62',
+					'304b957948a34c4594b41f0beda38d86',
+					'9383c08eed1644b58055c68e9341e174',
+					'bf4ffbc973274308ad6312381160f697'
+				]
 			}
 		},
 		destroyed() {
@@ -520,8 +533,8 @@
 			// window.addEventListener('beforeunload', e => this.back(e))
 		},
 		mounted() {
-			window.getUserInfo= this.getUserInfo;
-			
+			window.getUserInfo = this.getUserInfo;
+
 		},
 		watch: {
 			firstland() {
@@ -530,40 +543,117 @@
 			},
 			isSureland() {
 				// 确认地主
-				if(this.isSureland){
+				if (this.isSureland) {
 					this.sureLand()
 				}
-				
+
 			},
-			isboth(){
-				if(this.isboth==2){
+			// 是否拿到牌和用户信息
+			isboth() {
+				if (this.isboth == 2) {
 					this.setcard();
-					this.waiting=false
+					this.waiting = false
+				}
+			},
+			// 开始游戏等待倒计时
+			waiting() {
+				if (this.waiting) {
+					this.waitSetinterval();
+				} else {
+					clearInterval(this.waitTimeInterval);
+				}
+			},
+			// 输赢界面倒计时
+			accountRes() {
+				if (this.accountRes) {
+					this.waitConSetinterval();
+				} else {
+					clearInterval(this.waitContinueInterval);
 				}
 			}
+
 		},
 
 		methods: {
+			test(){
+				this.accountRes=true;
+			},
+			//等待超时接下来的操作
+			timeOut() {
+				// 直接退出房间
+				this.back();
+
+			},
+			// 开始游戏等待计时
+			waitSetinterval() {
+				var _this = this;
+				_this.waitTimeInterval = setInterval(function() {
+					_this.waitTime--;
+					if (_this.waitTime == 0) {
+						clearInterval(_this.waitTimeInterval);
+						_this.timeOut();
+					}
+				}, 1000);
+			},
+			// 继续游戏等待计时
+			waitConSetinterval() {
+				var _this = this;
+				_this.waitContinueInterval = setInterval(function() {
+					_this.waitTimeContine--;
+					if (_this.waitTimeContine == 0) {
+						clearInterval(_this.waitContinueInterval);
+						// _this.timeOut();
+					}
+				}, 1000);
+			},
+			bodyTouchStart(e) {
+				e.preventDefault();
+				this.touchcard = [];
+			},
+			bodyTouchMove(e) {
+				e.preventDefault();
+				var cardId = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY).getAttribute('cid');
+				this.touchcard.push(cardId);
+			},
+			bodyTouchEnd(e) {
+				e.preventDefault();
+				var temp = []; //一个新的临时数组
+				for (var i = 0; i < this.touchcard.length; i++) {
+					if (temp.indexOf(this.touchcard[i]) == -1) {
+						temp.push(this.touchcard[i]);
+					}
+				}
+				for (var i = 0; i < this.palySpaper.length; i++) {
+					for (var j = 0; j < temp.length; j++)
+						if (this.palySpaper[i].cardId == temp[j]) {
+							this.palySpaper[i].checked = !this.palySpaper[i].checked
+						}
+				}
+				this.palySpaper = this.palySpaper.slice();
+			},
 			// 加好友
-			addFriend(id){
+			addFriend(id) {
 				// alert('好友id----'+id)
 				H5Interactive.add_friend(id)
 			},
-			
+
 			// 返回
-			back(){
-				if(this.isLeave && this.websocket){
-					this.websocket.close()
-				}else if(!this.websocket){
-					H5Interactive.exit_room()   //退出房间
-				}else{
-					alert('不可以')
-				}
-				
-				
+			back() {
+				clearInterval(this.waitTimeInterval);
+				clearInterval(this.waitContinueInterval);
+				// if(this.isLeave && this.websocket){
+				this.websocket.close()
+				// }else if(!this.websocket){
+				// 	H5Interactive.exit_room()   //退出房间
+				// }else{
+				// 	// alert('不可以')
+				// }
+
+
 			},
 			// 继续游戏
-			continueGame(){
+			continueGame() {
+				clearInterval(this.waitContinueInterval);
 				var message = {
 					userId: this.selfuserid,
 					funcType: 100,
@@ -571,66 +661,73 @@
 				}
 				this.websocket.send(JSON.stringify(message));
 				this.clearall();
-				var websocket=this.websocket;
-				var userId=this.selfuserid;
-				var userToken=this.selfToken;
+				var websocket = this.websocket;
+				var userId = this.selfuserid;
+				var userToken = this.selfToken;
+				var lastroomid = this.roomID;
 				Object.assign(this.$data, this.$options.data())
-				this.selfuserid=userId;
-				this.selfToken=userToken;
-				this.websocket=websocket;
-				this.waiting=true;
-				this.startbtn=false;
+				this.selfuserid = userId;
+				this.selfToken = userToken;
+				this.websocket = websocket;
+				this.roomID = lastroomid;
+				this.waiting = true;
+				this.startbtn = false;
+
 			},
 			//换桌
-			changeDesk(){
-				this.isLeave=true;
+			changeDesk() {
+				this.isLeave = true;
 				this.back();
-				this.chageTable=true;
+				this.chageTable = true;
 			},
-			
-			
+
+
 			// 获取用户的id和token
-			getUserInfo(str){
-				this.selfuserid=str.split(",")[0].split('=')[1];
-				this.selfToken=str.split(",")[1].split('=')[1];
+			getUserInfo(str) {
+				// alert(str)
+				this.selfuserid = str.split(",")[0].split('=')[1];
+				this.selfToken = str.split(",")[1].split('=')[1];
 			},
-			startGame(){
-				var _this=this;
-				_this.selfToken=_this.tokenlist[_this.selfuserid];//测试用后期删除
-				var usermsg={
-					userid:_this.selfuserid,
-					token:_this.selfToken,
-					gametype:1
+			startGame() {
+				var _this = this;
+				_this.selfToken = _this.tokenlist[_this.selfuserid]; //测试用后期删除
+				var usermsg = {
+					userid: _this.selfuserid,
+					token: _this.selfToken,
+					gametype: 1
 				}
-				if(_this.chageTable){
-					_this.chageTable=false;
-					usermsg.originalRoomId=_this.roomID;
+
+				if (_this.chageTable) {
+
+					_this.chageTable = false;
+					usermsg.originalRoomId = _this.roomID;
 				}
+
 				uni.request({
-				    url: _this.$requestUrl.requestUrl.startGame,
-					method:'POST',
-				    data:usermsg,
+					url: requestUrl.startGame,
+					method: 'POST',
+					data: usermsg,
 					header: {
-						'Content-Type' : 'application/x-www-form-urlencoded'
+						'Content-Type': 'application/x-www-form-urlencoded'
 					},
-				    success: (res) => {
-						if(res.data.success){
-							_this.roomID=res.data.data.id;
+					success: (res) => {
+						if (res.data.success) {
+							_this.roomID = res.data.data.id;
 							this.start();
 						}
-				    }
+					}
 				});
-				this.startbtn=false;
-				this.waiting=true;
+				this.startbtn = false;
+				this.waiting = true;
 			},
-			
+
 			start() {
 				var _this = this;
 				var selfuserID = _this.selfuserid;
-				_this.websocket = new WebSocket(_this.$requestUrl.requestUrl.websocketUrl + _this.roomID+'/'+selfuserID);
+				_this.websocket = new WebSocket(requestUrl.websocketUrl + _this.roomID + '/' + selfuserID);
 				_this.websocket.onopen = function(event) {
 					console.log('连接成功');
-					_this.isLeave=true;
+					_this.isLeave = true;
 				};
 				_this.websocket.onmessage = function(event) {
 					var data = JSON.parse(event.data);
@@ -731,24 +828,24 @@
 						if (data.msg == 1 || data.msg == 2) {
 							var whichindex = _this.playOrder.indexOf(parseInt(data.userId));
 							_this.sendRecord[whichindex] = null;
-						}else{
+						} else {
 							var whichindex = _this.playOrder.indexOf(parseInt(data.userId));
 							_this.sendRecord[whichindex] = JSON.parse(data.msg);
-							if(_this.judgeCards(JSON.parse(data.msg)).cardKind=='BOMB'){
-								_this.doublePoint=_this.doublePoint*2
+							if (_this.judgeCards(JSON.parse(data.msg)).cardKind == 'BOMB') {
+								_this.doublePoint = _this.doublePoint * 2
 							}
 						}
-						
-						
-						
+
+
+
 					}
-					
+
 					// 获取到的牌信息
 					if (data.card) {
 						_this.cardslist = JSON.parse(data.card);
-						_this.beginTime= _this.formatDate();
+						_this.beginTime = _this.formatDate();
 						_this.isboth++;
-						_this.isLeave=false;
+						_this.isLeave = false;
 					}
 					// 获取用户信息
 					if (data.userInfo) {
@@ -767,96 +864,98 @@
 						// 根据位置展示信息
 						if (_this.whichme == '0') {
 							_this.playself = _this.usermsg[0];
-							_this.playleft = _this.usermsg[1];
-							_this.playright = _this.usermsg[2];
-					
+							_this.playleft = _this.usermsg[2];
+							_this.playright = _this.usermsg[1];
+
 						} else if (_this.whichme == '1') {
 							_this.playself = _this.usermsg[1];
-							_this.playleft = _this.usermsg[2];
-							_this.playright = _this.usermsg[0];
+							_this.playleft = _this.usermsg[0];
+							_this.playright = _this.usermsg[2];
 						} else if (_this.whichme == '2') {
 							_this.playself = _this.usermsg[2];
-							_this.playleft = _this.usermsg[0];
-							_this.playright = _this.usermsg[1];
+							_this.playleft = _this.usermsg[1];
+							_this.playright = _this.usermsg[0];
 						}
-						_this.setFriend(selfuserID,_this.useridlist)
-						
+						_this.setFriend(selfuserID, _this.useridlist)
+
 					}
 				};
 				//连接关闭的回调方法
 				_this.websocket.onclose = function(event) {
 					console.log(event)
-					if(event.data){
+					// alert(JSON.parse(event.data))
+					if (event.data) {
 						var data = JSON.parse(event.data);
-					}else{
-						var data={
-							userid:_this.selfuserid,
-							token:_this.selfToken,
-							gametype:1
+					} else {
+						var data = {
+							userid: _this.selfuserid,
+							token: _this.selfToken,
+							gametype: 1
 						}
 						// 退出房间
 						uni.request({
-						    url: _this.$requestUrl.requestUrl.exitRoom,
-							method:'POST',
-						    data:data,
+							url: requestUrl.exitRoom,
+							method: 'POST',
+							data: data,
 							header: {
-								'Content-Type' : 'application/x-www-form-urlencoded'
+								'Content-Type': 'application/x-www-form-urlencoded'
 							},
-						    success: (res) => {
-								if(res.data.success){
-									if(_this.chageTable){
-										var userId=_this.selfuserid;
-										var userToken=_this.selfToken;
-										var lastroomid=_this.roomID;
+							success: (res) => {
+								if (res.data.success) {
+									if (_this.chageTable) {
+										var userId = _this.selfuserid;
+										var userToken = _this.selfToken;
+										var lastroomid = _this.roomID;
 										Object.assign(_this.$data, _this.$options.data())
-										_this.selfuserid=userId;
-										_this.selfToken=userToken;
-										_this.chageTable=true;
-										_this.roomID=lastroomid;
+										_this.selfuserid = userId;
+										_this.selfToken = userToken;
+										_this.chageTable = true;
+										_this.roomID = lastroomid;
+										console.log(_this.roomID)
 										_this.startGame();
-									}else{
-										H5Interactive.exit_room()   //退出房间
+									} else {
+										H5Interactive.exit_room() //退出房间
 									}
-									
-									
+
+
 								}
-						    }
+							}
 						});
 					}
-				
+
 				};
 				_this.websocket.onerror = function(data) {
 					console.log(data)
 				};
 			},
 			// 处理好友关系是否显示加好友图标
-			setFriend(selfid,idlist){
-				var _this=this;
-				var data={
-					userid:parseInt(selfid),
-					userids:idlist
+			setFriend(selfid, idlist) {
+				var _this = this;
+				var data = {
+					userid: parseInt(selfid),
+					userids: idlist
 				}
 				uni.request({
-				    url: _this.$requestUrl.requestUrl.isFriend,
-					method:'POST',
-				    data:data,
-				    success: (res) => {
+					url: requestUrl.isFriend,
+					method: 'POST',
+					data: data,
+					success: (res) => {
 						console.log(res)
-						if(res.data.success){
-							var ids=res.data.data;
+						if (res.data.success) {
+							var ids = res.data.data;
 							console.log(ids)
-							if(ids.length>0){
-								for(var i=0;i<ids.length;i++){
-									var which=_this.whichplay(ids[i]);
-									if(which=='left'){
-										_this.leftbtnmsg.isFriend=true;
-									}else if(which=='right'){
-										_this.rightbtnmsg.isFriend=true;   
+							if (ids.length > 0) {
+								for (var i = 0; i < ids.length; i++) {
+									var which = _this.whichplay(ids[i]);
+									if (which == 'left') {
+										_this.leftbtnmsg.isFriend = true;
+									} else if (which == 'right') {
+										_this.rightbtnmsg.isFriend = true;
 									}
 								}
 							}
 						}
-				    }
+					}
 				});
 			},
 			// 判断当前是否上两家都不出
@@ -877,7 +976,7 @@
 
 				return result
 			},
-			
+
 			// 出牌显示
 			grabCardlist(id, msg) {
 				var which = this.whichplay(id);
@@ -890,20 +989,19 @@
 						this.leftbtnmsg.isLeftTest = false;
 						this.leftbtnmsg.leftText = '不出';
 						this.sendRecord[index] = null;
-					} 
-					// else if (msg == 2) {
-					// 	this.leftbtnmsg.isLeftTest = false;
-					// 	this.leftbtnmsg.leftText = '要不起';
-					// 	this.sendRecord[index] = null;
-					// }
-					else {
-						this.leftbtnmsg.leftChoose = JSON.parse(msg);
-						this.sendRecord[index] = this.leftbtnmsg.leftChoose;
-						this.leftcount = this.leftcount - parseInt(JSON.parse(msg).length);
-						if(this.leftcount==0){
+					} else if (msg == 2) {
+						this.leftbtnmsg.isLeftTest = false;
+						this.leftbtnmsg.leftText = '要不起';
+						this.sendRecord[index] = null;
+					} else {
+						var cards = JSON.parse(msg);
+						this.leftbtnmsg.leftChoose = this.sortCard(cards).reverse();
+						this.sendRecord[index] = cards;
+						this.leftcount = this.leftcount - parseInt(cards.length);
+						if (this.leftcount == 0) {
 							this.finish(id);
 							this.clearall();
-							this.isfinish=true;
+							this.isfinish = true;
 						}
 					}
 				} else if (which == 'right') {
@@ -913,40 +1011,39 @@
 						this.rightbtnmsg.isRightTest = false;
 						this.rightbtnmsg.rightText = '不出';
 						this.sendRecord[index] = null;
-					}
-					//  else if (msg == 2) {
-					// 	this.rightbtnmsg.isRightTest = false;
-					// 	this.rightbtnmsg.rightText = '要不起';
-					// 	this.sendRecord[index] = null;
-					// } 
-					else {
-						this.rightbtnmsg.rightChoose = JSON.parse(msg)
-						this.sendRecord[index] = this.leftbtnmsg.leftChoose;
-						this.rightcount = this.rightcount - (JSON.parse(msg).length);
-						if(this.rightcount==0){
+					} else if (msg == 2) {
+						this.rightbtnmsg.isRightTest = false;
+						this.rightbtnmsg.rightText = '要不起';
+						this.sendRecord[index] = null;
+					} else {
+						var cards = JSON.parse(msg);
+						this.rightbtnmsg.rightChoose = this.sortCard(cards).reverse();
+						this.sendRecord[index] = cards;
+						this.rightcount = this.rightcount - (cards.length);
+						if (this.rightcount == 0) {
 							this.finish(id);
 							this.clearall();
-							this.isfinish=true;
+							this.isfinish = true;
 						}
 					}
-				}else{
-					if(this.palySpaper.length==0){
+				} else {
+					if (this.palySpaper.length == 0) {
 						this.finish(id);
 						this.clearall();
-						this.isfinish=true;
+						this.isfinish = true;
 					}
 				}
-				
+
 				this.playOrderCount++;
 				var nextindex = this.playOrderCount % 3;
 				var indexId = this.playOrder[nextindex];
 				var which = this.whichplay(indexId);
-				if(!this.isfinish){
+				if (!this.isfinish) {
 					if (which == 'left') {
 						this.leftTimeDown();
 					} else if (which == 'self') {
 						this.selfTimeDown(3);
-					
+
 					} else {
 						this.rightTimeDown()
 					}
@@ -1035,14 +1132,14 @@
 				//创建音频
 				this.audio = new Audio();
 				this.audio.src = this.mp3;
-				this.audio.loop=true;
+				this.audio.loop = true;
 				// 播放音频
 				this.audio.play();
 				// 发牌定时器
 				let timer = setInterval(() => {
-				
+
 					// 牌发完，定时器关闭
-					if (nowCardLength >= 50) {//50
+					if (nowCardLength >= 50) { //50
 						clearInterval(timer);
 						this.showpaper = false;
 						var first = this.whichplay(this.useridlist[0]);
@@ -1089,17 +1186,27 @@
 				}
 			},
 			// 改变左右两边玩家的出牌的排列样式
-			cardleft(item, index) {
+			cardleft(item, index, which) {
 				var marginL, marginT;
 				if (item.checked) {
 					marginT = '0'
 				}
-				if (index == 0 || index == 9) {
+				if (index >= 7) {
+					marginT = '-.35rem';
+				}
+
+				if (index == 0 || index == 7) {
 					marginL = '0';
 				}
-				if (index >= 9) {
-					marginT = '-0.45rem';
+				if (which == 'right') {
+					if (index >= 7) {
+						marginT = '.45rem';
+					}
+					if (index == 7) {
+						marginL = '-1.3rem';
+					}
 				}
+
 				return {
 					marginLeft: marginL,
 					marginTop: marginT
@@ -1182,18 +1289,18 @@
 						item.isHint = true;
 					})
 					_this.palySpaper = _this.palySpaper.slice();
-					// if (which) {
+					if (which) {
 						_this.selfbtnmsg.hitbtn = true;
 						_this.selfbtnmsg.canclebtn = true;
 						_this.selfbtnmsg.sendbtn = true;
 						if (_this.isReturn(selfuserID)) {
 							_this.selfbtnmsg.canclebtn = false;
 						}
-					// }else{
-						// if(lastcard.length>0){
-						// 	_this.selfbtnmsg.nobtn = true;
-						// }
-					// }
+					} else {
+						if (lastcard.length > 0) {
+							_this.selfbtnmsg.nobtn = true;
+						}
+					}
 				}
 				_this.selfbtnmsg.timeSelf = setInterval(function() {
 					_this.selfbtnmsg.selfTime--;
@@ -1363,26 +1470,26 @@
 				var which = '';
 				if (_this.whichme == '0') {
 					if (index == '1') {
-						which = 'left'
-					} else if (index == '2') {
 						which = 'right'
+					} else if (index == '2') {
+						which = 'left'
 					} else {
 						which = 'self'
 					}
 
 				} else if (_this.whichme == '1') {
 					if (index == '2') {
-						which = 'left'
-					} else if (index == '0') {
 						which = 'right'
+					} else if (index == '0') {
+						which = 'left'
 					} else {
 						which = 'self'
 					}
 				} else if (_this.whichme == '2') {
 					if (index == '0') {
-						which = 'left'
-					} else if (index == '1') {
 						which = 'right'
+					} else if (index == '1') {
+						which = 'left'
 					} else {
 						which = 'self'
 					}
@@ -1484,7 +1591,7 @@
 			changePlayOrder() {
 				var index = this.useridlist.indexOf(parseInt(this.type1data.landid));
 				this.playOrder = this.useridlist.slice(index).concat(this.useridlist.slice(0, index));
-			
+
 			},
 			// 不加倍
 			nodouble() {
@@ -1549,7 +1656,7 @@
 			showcard() {
 				var _this = this;
 				_this.selfbtnmsg.SelfChoose = [];
-				
+
 				var userID = _this.selfuserid;
 				var reloadarry = [];
 				var checkdlist = [];
@@ -1583,7 +1690,7 @@
 							msg: msg
 						};
 						_this.websocket.send(JSON.stringify(message));
-						_this.selfbtnmsg.SelfChoose = checkdlist
+						_this.selfbtnmsg.SelfChoose = _this.sortCard(checkdlist).reverse();
 						_this.palySpaper = reloadarry;
 						_this.selfbtnmsg.isChoosebtn = true;
 						clearInterval(_this.selfbtnmsg.timeSelf);
@@ -1604,7 +1711,7 @@
 								msg: msg
 							};
 							_this.websocket.send(JSON.stringify(message));
-							_this.selfbtnmsg.SelfChoose = checkdlist
+							_this.selfbtnmsg.SelfChoose = _this.sortCard(checkdlist).reverse();
 							_this.palySpaper = reloadarry; //重新加载现有牌面
 							_this.selfbtnmsg.sendbtn = false;
 							_this.selfbtnmsg.canclebtn = false;
@@ -1654,7 +1761,7 @@
 			sendNo() {
 				var _this = this;
 				var userID = _this.selfuserid;
-			
+
 				var chageindex = _this.playOrder.indexOf(parseInt(userID));
 				var message = {
 					userId: userID,
@@ -1662,6 +1769,10 @@
 					msg: "1"
 				};
 				_this.websocket.send(JSON.stringify(message));
+				for (var index in _this.palySpaper) {
+					_this.palySpaper[index].checked = false;
+				}
+				_this.palySpaper = _this.palySpaper.slice();
 				_this.selfbtnmsg.isChoosebtn = true;
 				_this.selfbtnmsg.isSelfTest = false;
 				_this.selfbtnmsg.selfText = '不出';
@@ -1733,11 +1844,11 @@
 						_this.palySpaper.forEach(item => {
 							item.isHint = true;
 						})
-						
+
 						_this.palySpaper = _this.palySpaper.slice();
 					}
 
-				
+
 					var msg = JSON.stringify(cardlist);
 					var message = {
 						userId: userID,
@@ -1745,7 +1856,7 @@
 						msg: msg
 					};
 					_this.websocket.send(JSON.stringify(message));
-					_this.selfbtnmsg.SelfChoose = cardlist
+					_this.selfbtnmsg.SelfChoose = _this.sortCard(cardlist).reverse();
 					_this.palySpaper = reloadarry; //重新加载现有牌面
 					_this.selfbtnmsg.sendbtn = false;
 					_this.selfbtnmsg.canclebtn = false;
@@ -1761,7 +1872,7 @@
 				var _this = this;
 				var userID = _this.selfuserid;
 				var chageindex = _this.playOrder.indexOf(parseInt(userID));
-				
+
 				var message = {
 					userId: userID,
 					funcType: 3,
@@ -1780,7 +1891,7 @@
 				var userID = this.selfuserid;
 				var lastcard = this.getlastCard(userID);
 				var which = this.hintCards(lastcard, this.palySpaper);
-				
+
 				this.palySpaper.forEach(item => {
 					item.checked = false;
 				})
@@ -1793,12 +1904,9 @@
 							}
 						}
 					}
-					
+
 				}
-			
 				this.palySpaper = this.palySpaper.slice();
-	
-	
 			},
 			// 获取当前时间
 			formatDate() {
@@ -1820,88 +1928,92 @@
 			//结束
 			finish(id) {
 				// id 谁的牌结束了
-				var _this=this;
-				_this.isLeave=true;
-				_this.isfinish=true;
+				var _this = this;
+				_this.isLeave = true;
+				_this.isfinish = true;
 				_this.clearall();
 				_this.accountRes = true;
 				var selfuserID = _this.selfuserid;
-				_this.landdoublePoint=_this.doublePoint*2;
+				_this.landdoublePoint = _this.doublePoint * 2;
 				var resultList = [];
-				var winLose=[];
+				var winLose = [];
 				// 0输  1赢
 				if (id == _this.playOrder[0]) {
-					winLose=[1,0,0];
-				}else{
-					winLose=[0,1,1];
+					winLose = [1, 0, 0];
+				} else {
+					winLose = [0, 1, 1];
 				}
-				for(var i=0;i<_this.playOrder.length;i++){
-					var nowplayOrder=_this.playOrder[i];
-					var nowi=i;
-					var point=0;
-					var endDouble=_this.doublePoint;
-					if(nowi==0){
-						endDouble=_this.landdoublePoint;
+				for (var i = 0; i < _this.playOrder.length; i++) {
+					var nowplayOrder = _this.playOrder[i];
+					var nowi = i;
+					var point = 0;
+					var endDouble = _this.doublePoint;
+					if (nowi == 0) {
+						endDouble = _this.landdoublePoint;
 					}
-					if(winLose[nowi]==1){
-						point=_this.endPoint*endDouble
-					}else{
+					if (winLose[nowi] == 1) {
+						point = _this.endPoint * endDouble
+					} else {
 						// 豆子不够扣时直接扣除剩余的
-						var deduct=_this.endPoint*endDouble;
-						
-						for(var j=0;j<_this.usermsg.length;j++){
-							if(_this.usermsg[j].userid==nowplayOrder){
-								if(parseInt(_this.usermsg[j].point)<parseInt(deduct)){
-									deduct=_this.usermsg[j].point
+						var deduct = _this.endPoint * endDouble;
+
+						for (var j = 0; j < _this.usermsg.length; j++) {
+							if (_this.usermsg[j].userid == nowplayOrder) {
+								if (parseInt(_this.usermsg[j].point) < parseInt(deduct)) {
+									deduct = _this.usermsg[j].point
 								}
 							}
 						}
-					
-						point=-deduct
+
+						point = -deduct
 					}
-					
-					var data={
-					    "userid":nowplayOrder ,
-					    "point": point,
-					    "goldCoin": 0,
-					    "iswin": winLose[nowi],
-					    "beginTime":_this.beginTime,
-					    "gametype":1
+
+					var data = {
+						"userid": nowplayOrder,
+						"point": point,
+						"goldCoin": 0,
+						"iswin": winLose[nowi],
+						"beginTime": _this.beginTime,
+						"gametype": 1
 					}
 					resultList.push(data)
 				}
-				
+
 				if (selfuserID == _this.type1data.landid) {
 					uni.request({
-					    url: _this.$requestUrl.requestUrl.finishGame,
-						method:'POST',
-					    data: JSON.stringify(resultList),
+						url: requestUrl.finishGame,
+						method: 'POST',
+						data: JSON.stringify(resultList),
 						header: {
-							'Content-Type' : 'application/json'
+							'Content-Type': 'application/json'
 						},
-					    success: (res) => {
-					        console.log(res.data);
-					    }
+						success: (res) => {
+							console.log(res.data);
+						}
 					});
 				}
-				
-				for(var i=0;i<resultList.length;i++){
-					var forwho=_this.whichplay(resultList[i].userid);
-					if(forwho=='left'){
-						_this.leftmoney=resultList[i].point
-					}else if(forwho=='right'){
-						_this.rightmoney=resultList[i].point
-					}else if(forwho=='self'){
-						_this.selfmoney=resultList[i].point;
-						if(resultList[i].iswin==1){
+
+				for (var i = 0; i < resultList.length; i++) {
+					var forwho = _this.whichplay(resultList[i].userid);
+					if (forwho == 'left') {
+						_this.leftmoney = resultList[i].point
+					} else if (forwho == 'right') {
+						_this.rightmoney = resultList[i].point
+					} else if (forwho == 'self') {
+						_this.selfmoney = resultList[i].point;
+						if (resultList[i].iswin == 1) {
 							_this.isWin = true;
-						}else{
+						} else {
 							_this.isWin = false;
 						}
 					}
-				}	
-			}
+				}
+			},
+
 		}
+
+
+
 	}
 </script>
 
@@ -1912,45 +2024,79 @@
 		align-items: center;
 	}
 
+
 	page {
 		background: url(../../static/image/bg.webp) no-repeat center;
 		background-size: 100% 100%;
 		height: 100%;
 		width: 100%;
 		font-size: .12rem;
+		overflow: hidden;
+		position: fixed;
+		top: 0;
+		left: 0;
 	}
-	
-	.back{
-		position:absolute;
-		left:.34rem;
-		top:0;
+
+	.continue-btn text {
+		color: #fff;
+		font-size: .22rem;
 	}
-	.back image{
-		width:.5rem;
-		height:.5rem;
+	.continue-btn {
+	    width: 1.1rem;
+	    height: 0.43rem;
+	    position: absolute;
+		right: 2.32rem;
+		bottom: 0.24rem;
+	    background: url(../../static/image/continuebtn.png) no-repeat;
+	    background-size: 100% 100%;
+	    font-size: 0.14rem;
+	    color: #ffffff;
+	    text-shadow: 1px 0px 1px rgba(232, 139, 58, 0.8),
+	      -1px 0px 1px rgba(232, 139, 58, 0.8),
+	      0px 1px 1px rgba(232, 139, 58, 0.8),
+	      0px -1px 1px rgba(232, 139, 58, 0.8);
+	    line-height: 0.4rem;
+	    text-align: center;
+		
+	  }
+
+	.back {
+		position: absolute;
+		left: .34rem;
+		top: 0;
 	}
-	.roomBtn{
-		background:url("../../static/image/finishbtnbg.png") no-repeat;
-		position:absolute;
-		top:0;
-		right:0;
-		width:1rem;
-		height:.5rem;
-		padding:0 .5rem;
-		background-size:100% 100%
+
+	.back image {
+		width: .5rem;
+		height: .5rem;
 	}
-	.roomBtn image.changeDesk{
-		width:0.35rem;
-		height:0.45rem;
-		margin-right:0.2rem;
+
+	.roomBtn {
+		background: url("../../static/image/finishbtnbg.png") no-repeat;
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 1rem;
+		height: .5rem;
+		padding: 0 .5rem;
+		background-size: 100% 100%
 	}
-	.roomBtn image{
-		width:0.4rem;
-		height:0.45rem;
+
+	.roomBtn image.changeDesk {
+		width: 0.35rem;
+		height: 0.45rem;
+		margin-right: 0.2rem;
 	}
-	.roomBtn image.award{
-		margin-top:0.05rem;
+
+	.roomBtn image {
+		width: 0.4rem;
+		height: 0.45rem;
 	}
+
+	.roomBtn image.award {
+		margin-top: 0.05rem;
+	}
+
 	.landlordCard image {
 		width: .2rem;
 		height: .3rem;
@@ -1977,10 +2123,10 @@
 
 	.startbtn {
 		height: .43rem;
-		position:absolute;
-		left:50%;
-		top:50%;
-		transform:translate(-50%,-50%)
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%)
 	}
 
 	.startbtn image {
@@ -1989,9 +2135,13 @@
 	}
 
 	.playbg {
-		height: 1.4rem;
+		height: 1.1rem;
 		position: relative;
 		z-index: 2;
+	}
+
+	.palyR .headimg {
+		left: .75rem;
 	}
 
 	.palyL .playbg {
@@ -2000,8 +2150,8 @@
 
 	.palyL {
 		position: absolute;
-		top: .6rem;
-		left: .5rem;
+		top: .8rem;
+		left: .2rem;
 		height: 1.4rem;
 		overflow: hidden;
 		width: 2rem;
@@ -2031,9 +2181,15 @@
 	.playmsg {
 		color: #fff;
 		background: url(../../static/image/left.png) no-repeat;
-		margin-right: .33rem;
+		margin-right: .1rem;
 		background-size: 100% 100%;
 		padding: 0.01rem .2rem;
+	}
+
+	.palyS .headimg {
+		top: auto;
+		left: .1rem;
+		bottom: .05rem
 	}
 
 	.palyL .playmsg,
@@ -2057,12 +2213,13 @@
 		background: url(../../static/image/self.png) no-repeat;
 		height: .2rem;
 		background-size: 100% 100%;
+		margin-left: 0.2rem;
 	}
 
 	.palyR .playmsg {
 		background: url(../../static/image/right.png) no-repeat;
 		margin-right: 0;
-		margin-left: .33rem;
+		margin-left: .03rem;
 	}
 
 	.playlevel {
@@ -2076,21 +2233,20 @@
 	.headimg {
 		position: absolute;
 		top: 0;
-		left: .3rem;
-		width: 1.22rem;
-		height: 1.4rem;
+		left: .4rem;
+		width: 0.45rem;
+		height: 0.45rem;
+		border: 0.05rem solid #d1a05b;
+		border-radius: 0.1rem;
+		background: #f2e5bf;
 		z-index: 1;
-
 	}
 
-	.palyS .headimg,
-	.palyS .playbg {
-		height: 1.56rem;
-	}
+
 
 	.headimg image {
-		width: 1.22rem;
-		height: 1.56rem;
+		width: 0.45rem;
+		height: .45rem;
 	}
 
 	.palyR .headimg image {
@@ -2099,8 +2255,8 @@
 
 	.palyR {
 		position: absolute;
-		top: .6rem;
-		right: .3rem;
+		top: .8rem;
+		right: .2rem;
 		overflow: hidden;
 		height: 1.4rem;
 	}
@@ -2254,20 +2410,19 @@
 		position: absolute;
 		left: 50%;
 		bottom: .2rem;
-		width: 85%;
-		margin-left: -55%;
+		width: 100%;
+		margin-left: -50%;
 		height: 1.35rem;
-		padding-left: 20%;
+		padding-left: 3%;
 	}
 
 	.palyS .cardshowlist {
-		margin-bottom:-.58rem;
+		margin-bottom: -.58rem;
 	}
 
 	@media screen and (max-width: 736px) {
 		.mycarlist {
-			margin-left: -51%;
-			width: 80%;
+			padding-left: 4%;
 		}
 	}
 
@@ -2279,7 +2434,7 @@
 		margin-top: 0.19rem;
 	}
 
-	.card image {
+	.card img {
 		width: .58rem;
 		height: 0.8rem;
 	}
@@ -2377,8 +2532,9 @@
 	.cardnormal .card {
 		float: left;
 	}
-	.selfbtn{
-		margin-bottom:-0.2rem
+
+	.selfbtn {
+		margin-bottom: -0.2rem
 	}
 
 	.paperbox {
@@ -2403,7 +2559,8 @@
 	}
 
 	.palyS .landhead {
-		top: -0.2rem;
+		top: 0.3rem;
+		left: 0.7rem;
 	}
 
 	.palyL .landhead {
@@ -2433,11 +2590,21 @@
 		color: #79ac4e
 	}
 
+	.palyRbox .msgbox {
+		margin-right: -1.4rem;
+		margin-top: 0.3rem;
+	}
+
+	.palyLbox .msgbox {
+		margin-top: 0.3rem;
+		margin-left: -.1rem;
+	}
+
 	.grabCardbox {
 		display: inline-block;
 		position: relative;
 		height: .35rem;
-		margin-bottom:0.5rem;
+		margin-bottom: 0.5rem;
 	}
 
 	.palyS .mybox {
@@ -2480,30 +2647,33 @@
 		text-align: center;
 		margin: 0 auto;
 		margin-top: 0.4rem;
-		background: linear-gradient( to right,
-		 rgba(0,0,0,0) 0%,
-		 rgba(0,0,0,0) 10%, 
-		 rgba(0,0,0,0.3) 20%, 
-		 rgba(0,0,0,0.4) 30%, 
-		 rgba(0,0,0,0.5) 40%, 
-		 rgba(0,0,0,0.6) 50%, 
-		 rgba(0,0,0,0.5) 60%, 
-		 rgba(0,0,0,0.4) 70%, 
-		 rgba(0,0,0,0.3) 80%, 
-		 rgba(0,0,0,0) 90%, 
-		 rgba(0,0,0,0) 100%);
+		background: linear-gradient(to right,
+			rgba(0, 0, 0, 0) 0%,
+			rgba(0, 0, 0, 0) 10%,
+			rgba(0, 0, 0, 0.3) 20%,
+			rgba(0, 0, 0, 0.4) 30%,
+			rgba(0, 0, 0, 0.5) 40%,
+			rgba(0, 0, 0, 0.6) 50%,
+			rgba(0, 0, 0, 0.5) 60%,
+			rgba(0, 0, 0, 0.4) 70%,
+			rgba(0, 0, 0, 0.3) 80%,
+			rgba(0, 0, 0, 0) 90%,
+			rgba(0, 0, 0, 0) 100%);
 	}
+
 	.waiting {
 		text-align: center;
-		position:absolute;
-		top:50%;
-		left:50%;
-		transform:translate(-50%,-50%);
-		font-size:.18rem;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		font-size: .18rem;
 	}
-	.waiting text{
+
+	.waiting text {
 		color: #f3e6ac;
 	}
+
 	/* 地主牌展示 */
 	.landlordCard .card {
 		float: left;
@@ -2512,23 +2682,24 @@
 
 	.palyLbox.mybox {
 		top: .75rem;
-		left: 2.3rem;
+		left: 2rem;
 		transform: translate(0, 0);
 	}
 
 	.palyRbox.mybox {
 		top: .75rem;
-		right: 2.4rem;
+		right: 2.3rem;
 		transform: translate(0, 0);
 	}
 
 	.palyLbox .cardlist,
 	.palyRbox .cardlist {
 		max-width: 1.6rem;
-		
+
 	}
-	.palyLbox .cardlist{
-		margin-left:0.1rem;
+
+	.palyLbox .cardlist {
+		margin-left: 0.1rem;
 	}
 
 	.accountbox {
@@ -2705,16 +2876,20 @@
 		color: #25241d;
 	}
 
-	.accountbox .continue-btn {
-		width: 0.98rem;
-		height: 0.43rem;
-		position: absolute;
-		right: 2.32rem;
-		bottom: 0.24rem;
-	}
-
+	
+	
 	.accountbox .continue-btn img {
 		width: 100%;
+	}
+
+	.palyLbox .paperOperate {
+		margin-left: -.1rem;
+		margin-top: .2rem
+	}
+
+	.palyRbox .paperOperate {
+		margin-right: -1.4rem;
+		margin-top: .2rem
 	}
 
 

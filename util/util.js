@@ -92,12 +92,9 @@ function arrange(source) {
 }
 
 
-
-
-
 export {
 	valCount,
 	getMaxVal,
 	sortCard,
-	arrange,
+	arrange
 }
