@@ -41,7 +41,7 @@
 						</view>
 						<view class="beans flex juscon-start alignitem-center">
 							<image src="../../static/image/dou.png" mode=""></image>
-							<text>{{playleft.point}}</text>
+							<text>{{playleft.point | pointFilter}}</text>
 						</view>
 					</view>
 					<view class="cardnum">
@@ -167,7 +167,7 @@
 							</view>
 							<view class="beansdetail flex juscon-between alignitem-center">
 								<image src="../../static/image/dou.png" class="dou"></image>
-								<text>{{playself.point}}</text>
+								<text>{{playself.point | pointFilter}}</text>
 								<image src="../../static/image/add.png" class="add"></image>
 							</view>
 						</view>
@@ -222,7 +222,7 @@
 						</view>
 						<view class="beans flex juscon-start alignitem-center">
 							<image src="../../static/image/dou.png" mode=""></image>
-							<text>{{playright.point}}</text>
+							<text>{{playright.point | pointFilter}}</text>
 						</view>
 					</view>
 
@@ -539,6 +539,17 @@
 		},
 		destroyed() {
 			// window.addEventListener('beforeunload', e => this.back(e))
+		},
+		// 豆子显示过滤器
+		filters: {
+			pointFilter(value) {
+				// if (!value) return "";
+				if (value >= 10000) {
+					return (value / 10000).toFixed(2) + `万`;
+				} else {
+					return value;
+				}
+			},
 		},
 		components: {
 			uniList,
