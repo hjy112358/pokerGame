@@ -1,12 +1,14 @@
 <template>
 	<view class="content">
-		<view class="testsend">
-			<input type="text" v-model='selfuserid' style="color:#fff;border:1px solid #f00" />
+		<!-- <view class="testsend">
+			
+			<input type="text" v-model='selfuserid' style="color:#fff;border:1px solid #f00;" />
 			<input type="text" v-model='selfToken' style="color:#fff;border:1px solid #f00" />
-		</view>
+			<input type="text" v-model="teststr" style="color:#fff;border:1px solid #f00"/>
+		</view> -->
 		<view class="topbox">
 			<!-- 返回 -->
-			<view class="back" @tap='back()'>
+			<view class="back" @tap='exitRoomFn()'>
 				<image src="../../static/image/back.png"></image>
 			</view>
 
@@ -285,13 +287,13 @@
 			<view class="noEnoughbox" v-show='isNoenough'>
 				<view class="noEnough" >
 					<text>豆子不够了，退出房间！</text>
-					<image src="../../static/image/sure.png" mode="" @tap="back()"></image>
+					<image src="../../static/image/sure.png" mode="" @tap="exitRoomFn()"></image>
 				</view>
 			</view>
 			<!-- 背景部分 -->
 			<div class="account-bg">
 			</div>
-			<view class="back" @tap='back()'>
+			<view class="back" @tap='exitRoomFn()'>
 				<image src="../../static/image/back.png"></image>
 			</view>
 			<view class="roomBtn flex juscon-around alignitem-center">
@@ -561,7 +563,7 @@
 		},
 		mounted() {
 			window.getUserInfo = this.getUserInfo;
-
+			window.exitRoomFn = this.exitRoomFn;
 		},
 		watch: {
 			firstland() {
@@ -606,7 +608,7 @@
 			//等待超时接下来的操作
 			timeOut() {
 				// 直接退出房间
-				this.back();
+				this.exitRoomFn();
 
 			},
 			// 开始游戏等待计时
@@ -663,16 +665,18 @@
 			},
 
 			// 返回
-			back() {
+			exitRoomFn() {
 				clearInterval(this.waitTimeInterval);
 				clearInterval(this.waitContinueInterval);
-				// if(this.isLeave && this.websocket){
+				if(this.isLeave && this.websocket){
+					// alert('close')
 				this.websocket.close()
-				// }else if(!this.websocket){
-				// 	H5Interactive.exit_room()   //退出房间
-				// }else{
-				// 	// alert('不可以')
-				// }
+				}else if(!this.websocket){
+					// alert('close')
+					H5Interactive.exit_room()   //退出房间
+				}else{
+					// alert('不可以')
+				}
 
 
 			},
@@ -702,7 +706,7 @@
 			//换桌
 			changeDesk() {
 				this.isLeave = true;
-				this.back();
+				this.exitRoomFn();
 				this.chageTable = true;
 			},
 
@@ -710,12 +714,13 @@
 			// 获取用户的id和token
 			getUserInfo(str) {
 				// alert(str)
+				this.teststr=str;
 				this.selfuserid = str.split(",")[0].split('=')[1];
 				this.selfToken = str.split(",")[1].split('=')[1];
 			},
 			startGame() {
 				var _this = this;
-				_this.selfToken = _this.tokenlist[_this.selfuserid]; //测试用后期删除
+				// _this.selfToken = _this.tokenlist[_this.selfuserid]; //测试用后期删除
 				var usermsg = {
 					userid: _this.selfuserid,
 					token: _this.selfToken,
@@ -3258,5 +3263,6 @@
 		position: fixed;
 		top: 0;
 		left: 0;
+		/* width:100%; */
 	}
 </style>
