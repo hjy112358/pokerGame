@@ -1,11 +1,10 @@
 <template>
 	<view class="content">
-		<!-- <view class="testsend">
+		<view class="testsend">
 			
 			<input type="text" v-model='selfuserid' style="color:#fff;border:1px solid #f00;" />
 			<input type="text" v-model='selfToken' style="color:#fff;border:1px solid #f00" />
-			<input type="text" v-model="teststr" style="color:#fff;border:1px solid #f00"/>
-		</view> -->
+		</view>
 		<view class="topbox">
 			<!-- 返回 -->
 			<view class="back" @tap='exitRoomFn()'>
@@ -714,13 +713,13 @@
 			// 获取用户的id和token
 			getUserInfo(str) {
 				// alert(str)
-				this.teststr=str;
+				
 				this.selfuserid = str.split(",")[0].split('=')[1];
 				this.selfToken = str.split(",")[1].split('=')[1];
 			},
 			startGame() {
 				var _this = this;
-				// _this.selfToken = _this.tokenlist[_this.selfuserid]; //测试用后期删除
+				_this.selfToken = _this.tokenlist[_this.selfuserid]; //测试用后期删除
 				var usermsg = {
 					userid: _this.selfuserid,
 					token: _this.selfToken,
@@ -2246,7 +2245,7 @@
 
 
 	page {
-		background: url(../../static/image/bg.webp) no-repeat center;
+		background: url(../../static/image/bg.jpg) no-repeat center;
 		background-size: 100% 100%;
 		height: 100%;
 		width: 100%;
@@ -2995,7 +2994,7 @@
 	.accountbox {
 		width: 100%;
 		height: 100%;
-		background: url("../../static/image/maskbg.webp");
+		background: url("../../static/image/maskbg.png");
 		background-size: 100% 100%;
 		position: absolute;
 		top: 0;
@@ -3004,7 +3003,7 @@
 	}
 
 	.accountbox.win .account-bg {
-		background: url("../../static/image/winbg.webp") no-repeat;
+		background: url("../../static/image/winbg.png") no-repeat;
 		background-size: 8.3rem 3.7rem;
 	}
 
@@ -3019,7 +3018,7 @@
 	}
 
 	.accountbox.lose .account-bg {
-		background: url("../../static/image/losebg.webp") no-repeat;
+		background: url("../../static/image/losebg.png") no-repeat;
 		background-size: 8.3rem 3.7rem;
 	}
 
