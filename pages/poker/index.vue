@@ -1,7 +1,7 @@
 <template>
 	<view class="content">
 		<view class="testsend">
-			
+
 			<input type="text" v-model='selfuserid' style="color:#fff;border:1px solid #f00;" />
 			<input type="text" v-model='selfToken' style="color:#fff;border:1px solid #f00" />
 		</view>
@@ -284,7 +284,7 @@
 		<view class="accountbox" v-if="accountRes" :class="isWin ? `win` : `lose`">
 			<!-- 豆子不够提示退出房间 -->
 			<view class="noEnoughbox" v-show='isNoenough'>
-				<view class="noEnough" >
+				<view class="noEnough">
 					<text>豆子不够了，退出房间！</text>
 					<image src="../../static/image/sure.png" mode="" @tap="exitRoomFn()"></image>
 				</view>
@@ -526,7 +526,7 @@
 				waitTimeContine: 30, //继续游戏默认等待时间
 				waitContinueInterval: null, //继续游戏倒计时
 				girsrc: '', //gif图
-				isNoenough:false,//是否豆子不够扣要退出房间
+				isNoenough: false, //是否豆子不够扣要退出房间
 				// 测试token
 				tokenlist: ['',
 					'9383c08eed1644b58055c68e9341e172',
@@ -558,6 +558,7 @@
 		},
 		created() {
 			this.remFn(); //加载rem
+			this.getBaseconfig()
 			// window.addEventListener('beforeunload', e => this.back(e))
 		},
 		mounted() {
@@ -603,7 +604,28 @@
 		},
 
 		methods: {
-
+			getBaseconfig() {
+				// 获取基础参数
+				uni.request({
+					url: requestUrl.baseConfig,
+					method: "get",
+					data: {
+						keyword: 'poker1'
+					},
+					header: {
+						"Content-Type": "application/x-www-form-urlencoded"
+					},
+					success: res => {
+						if (res.data.success) {
+							console.log(res.data.data);
+							var baseconfig = res.data.data;
+							this.doublePoint=baseconfig.poker1_q1;
+							this.landdoublePoint=baseconfig.poker1_q1;
+							this.endPoint=baseconfig.poker1_difen
+						}
+					}
+				});
+			},
 			//等待超时接下来的操作
 			timeOut() {
 				// 直接退出房间
@@ -667,13 +689,13 @@
 			exitRoomFn() {
 				clearInterval(this.waitTimeInterval);
 				clearInterval(this.waitContinueInterval);
-				if(this.isLeave && this.websocket){
+				if (this.isLeave && this.websocket) {
 					// alert('close')
-				this.websocket.close()
-				}else if(!this.websocket){
+					this.websocket.close()
+				} else if (!this.websocket) {
 					// alert('close')
-					H5Interactive.exit_room()   //退出房间
-				}else{
+					H5Interactive.exit_room() //退出房间
+				} else {
 					// alert('不可以')
 				}
 
@@ -713,7 +735,7 @@
 			// 获取用户的id和token
 			getUserInfo(str) {
 				// alert(str)
-				
+
 				this.selfuserid = str.split(",")[0].split('=')[1];
 				this.selfToken = str.split(",")[1].split('=')[1];
 			},
@@ -1012,17 +1034,17 @@
 				var which = _this.whichplay(id);
 				var index = _this.playOrder.indexOf(parseInt(id));
 				var selfuserID = _this.selfuserid;
-				var gif='';
+				var gif = '';
 				if (msg == 1) {
 					var myaudio = new Audio();
 					myaudio.src = '/static/audio/pass.mp3';
 					myaudio.play();
-					gif= '';
+					gif = '';
 				} else if (msg == 2) {
 					var myaudio = new Audio();
 					myaudio.src = '/static/audio/pass2.mp3';
 					myaudio.play();
-					gif= '';
+					gif = '';
 				} else {
 					var result = _this.judgeCards(JSON.parse(msg));
 					console.log(result)
@@ -1032,7 +1054,7 @@
 							var myaudio = new Audio();
 							myaudio.src = '/static/audio/' + result.val + '.mp3';
 							myaudio.play();
-							gif= '';
+							gif = '';
 							break;
 
 							// 对子
@@ -1061,7 +1083,7 @@
 							var myaudio = new Audio();
 							myaudio.src = '/static/audio/BOMB.mp3';
 							myaudio.play();
-							gif= '/static/image/gif/BOMB.gif';
+							gif = '/static/image/gif/BOMB.gif';
 							break;
 							//王炸
 						case 'KINGBOMB':
@@ -1127,8 +1149,8 @@
 							myaudio.play();
 							gif = '/static/image/gif/PLANE.gif';
 							break;
-						default :
-							gif= '';
+						default:
+							gif = '';
 
 					}
 				}
@@ -1148,15 +1170,15 @@
 						_this.leftbtnmsg.showgif = false;
 						_this.sendRecord[index] = null;
 					} else {
-						if(gif!=''){
-							_this.girsrc=gif+'?time='+Date.parse(new Date());
+						if (gif != '') {
+							_this.girsrc = gif + '?time=' + Date.parse(new Date());
 							_this.leftbtnmsg.showgif = true;
 							setTimeout(function() {
-								_this.girsrc = '../../static/image/null.png?time='+Date.parse(new Date());
+								_this.girsrc = '../../static/image/null.png?time=' + Date.parse(new Date());
 								_this.leftbtnmsg.showgif = false;
 							}, 1000)
 						}
-					
+
 						var cards = JSON.parse(msg);
 						_this.leftbtnmsg.leftChoose = _this.sortCard(cards).reverse();
 						_this.sendRecord[index] = cards;
@@ -1181,15 +1203,15 @@
 						_this.sendRecord[index] = null;
 					} else {
 						console.log(_this.girsrc)
-						if(gif!=''){
-							_this.girsrc=gif+'?time='+Date.parse(new Date());
+						if (gif != '') {
+							_this.girsrc = gif + '?time=' + Date.parse(new Date());
 							_this.rightbtnmsg.showgif = true;
 							setTimeout(function() {
-								_this.girsrc = '../../static/image/null.png?time='+Date.parse(new Date());
+								_this.girsrc = '../../static/image/null.png?time=' + Date.parse(new Date());
 								_this.rightbtnmsg.showgif = false;
 							}, 1000)
 						}
-						
+
 						var cards = JSON.parse(msg);
 						_this.rightbtnmsg.rightChoose = _this.sortCard(cards).reverse();
 						_this.sendRecord[index] = cards;
@@ -1201,20 +1223,20 @@
 						}
 					}
 				} else {
-					if(msg==1||msg==2){
+					if (msg == 1 || msg == 2) {
 						_this.selfbtnmsg.showgif = false;
-					}else {
-						if(gif!=''){
-							_this.girsrc=gif+'?time='+Date.parse(new Date());
+					} else {
+						if (gif != '') {
+							_this.girsrc = gif + '?time=' + Date.parse(new Date());
 							_this.selfbtnmsg.showgif = true;
 							setTimeout(function() {
-								_this.girsrc = '../../static/image/null.png?time='+Date.parse(new Date());
+								_this.girsrc = '../../static/image/null.png?time=' + Date.parse(new Date());
 								_this.selfbtnmsg.showgif = false;
 							}, 1000)
 						}
-						
+
 					}
-					
+
 					if (_this.palySpaper.length == 0) {
 						_this.finish(id);
 						_this.clearall();
@@ -2131,7 +2153,7 @@
 				_this.isfinish = true;
 				_this.clearall();
 				_this.accountRes = true;
-				var nopointid=null;  //没有豆子的id
+				var nopointid = null; //没有豆子的id
 				var selfuserID = _this.selfuserid;
 				_this.landdoublePoint = _this.doublePoint * 2;
 				var resultList = [];
@@ -2164,7 +2186,7 @@
 									isnull = true;
 									minus = parseInt(minus) + parseInt(deduct) - parseInt(_this.usermsg[j].point);
 									deduct = _this.usermsg[j].point;
-									nopointid=nowplayOrder;
+									nopointid = nowplayOrder;
 								}
 							}
 						}
@@ -2182,10 +2204,10 @@
 					}
 					resultList.push(data)
 				}
-				
-				
-				if(nopointid==selfuserID){
-					_this.isNoenough=true;
+
+
+				if (nopointid == selfuserID) {
+					_this.isNoenough = true;
 				}
 
 
@@ -2257,15 +2279,16 @@
 	}
 
 	/* 豆子不够 */
-	.noEnoughbox{
+	.noEnoughbox {
 		width: 100%;
 		height: 100%;
-		background:rgba(0,0,0,.2);
+		background: rgba(0, 0, 0, .2);
 		position: absolute;
-		top:0;
-		left:0;
-		z-index:1;
+		top: 0;
+		left: 0;
+		z-index: 1;
 	}
+
 	.noEnough {
 		width: 3.38rem;
 		height: 2.09rem;
@@ -2285,7 +2308,7 @@
 		display: block;
 		margin: 0 auto;
 		margin-top: 0.6rem;
-		color:#B45000
+		color: #B45000
 	}
 
 	.noEnough image {
